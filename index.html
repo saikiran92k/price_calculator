@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gold Price Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #fff8e1;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 10px;
+      background-color: #ffca28;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+      text-align: center;
+    }
+    small {
+      display: block;
+      color: gray;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Gold Price Calculator</h2>
+    <label for="type">Type</label>
+    <select id="type">
+      <option value="jewellery">Jewellery</option>
+      <option value="bullion">Bullion</option>
+    </select>
+
+    <label for="purity">Purity (Karat or Fineness)</label>
+    <input type="number" id="purity" placeholder="e.g., 916 or 22 for 22K" />
+
+    <label for="goldPrice">Gold Price for 24K (in INR)</label>
+    <input type="number" id="goldPrice" placeholder="e.g., 6000" />
+    <small id="autoPriceNote">(Auto-fetched or manually editable)</small>
+
+    <label for="weight">Weight (in grams)</label>
+    <input type="number" id="weight" placeholder="e.g., 10" />
+
+    <label for="makingCharges">Making Charges (optional)</label>
+    <input type="text" id="makingCharges" placeholder="e.g., 10% or 1000" />
+
+    <label for="discount">Discount (optional)</label>
+    <input type="text" id="discount" placeholder="e.g., 5% or 500" />
+
+    <button onclick="calculatePrice()">Calculate Final Price</button>
+
+    <div id="result"></div>
+  </div>
+
+  <script>
+    async function fetchGoldPrice() {
+      try {
+        // Simulated auto-fetch. Replace with real API call if needed.
+        const simulatedPrice = 6200; // fallback price
+        document.getElementById('goldPrice').value = simulatedPrice;
+      } catch (error) {
+        document.getElementById('autoPriceNote').innerText = "(Could not fetch automatically, please enter manually)";
+      }
+    }
+
+    function calculatePrice() {
+      const type = document.getElementById('type').value;
+      const purity = parseFloat(document.getElementById('purity').value);
+      const goldPrice = parseFloat(document.getElementById('goldPrice').value);
+      const weight = parseFloat(document.getElementById('weight').value);
+      const makingChargesInput = document.getElementById('makingCharges').value.trim();
+      const discountInput = document.getElementById('discount').value.trim();
+
+      if (isNaN(purity) || isNaN(goldPrice) || isNaN(weight)) {
+        document.getElementById('result').innerText = 'Please fill in all required fields correctly.';
+        return;
+      }
+
+      let purityFactor = purity > 24 ? purity / 999 : purity / 24;
+
+      let basePrice = goldPrice * weight * purityFactor;
+
+      // Handle making charges (percentage or fixed)
+      let makingChargeAmt = 0;
+      if (makingChargesInput.endsWith('%')) {
+        let perc = parseFloat(makingChargesInput);
+        if (!isNaN(perc)) {
+          makingChargeAmt = (basePrice * perc) / 100;
+        }
+      } else if (!isNaN(parseFloat(makingChargesInput))) {
+        makingChargeAmt = parseFloat(makingChargesInput);
+      }
+
+      let subtotal = basePrice + makingChargeAmt;
+      let gst = (subtotal * 3) / 100;
+      let finalPrice = subtotal + gst;
+
+      // Handle discount (percentage or fixed)
+      let discountAmount = 0;
+      if (discountInput.endsWith('%')) {
+        let perc = parseFloat(discountInput);
+        if (!isNaN(perc)) {
+          discountAmount = (finalPrice * perc) / 100;
+        }
+      } else if (!isNaN(parseFloat(discountInput))) {
+        discountAmount = parseFloat(discountInput);
+      }
+
+      finalPrice -= discountAmount;
+
+      document.getElementById('result').innerHTML = `Final Price: ₹${finalPrice.toFixed(2)}<br><small style='color:gray'>(Includes 3% GST)</small>`;
+    }
+
+    // Auto-fetch gold price on load
+    window.onload = fetchGoldPrice;
+  </script>
+</body>
+</html>
